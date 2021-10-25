@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 import PySimpleGUI as sg
-from random import randint
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 from matplotlib.figure import Figure
 import numpy as np
@@ -18,9 +16,9 @@ def com_windows():
     layout = [
                  [sg.Text('Valve Control', size=(40, 1),
                     justification='center', font='Helvetica 20')],
-                 [sg.Text('EIB200 COM port', size=(15, 1), font='Helvetica 12'), sg.InputText('1')],
-                 [sg.Text('Arduino COM port', size=(15, 1), font='Helvetica 12'), sg.InputText('2')],
-                 [sg.Text('4VM Adress', size=(15, 1), font='Helvetica 12'), sg.InputText('28')],
+                 [sg.Text('EIB200 COM port', size=(15, 1), font='Helvetica 12'), sg.InputText('6')],
+                 [sg.Text('Arduino COM port', size=(15, 1), font='Helvetica 12'), sg.InputText('4')],
+                 [sg.Text('4VM Adress', size=(15, 1), font='Helvetica 12'), sg.InputText('10')],
 
                  [sg.Canvas(key='controls_cv')],
                  [sg.Canvas(size=(650, 30), key='-CANVAS-')],
@@ -117,9 +115,17 @@ def main():
             eib_com = int(values[0])
             arduino_com = int(values[1])
             fourVM_addr = int(values[2])
-            break
-    #eib.InitConnection(eib_com); # COM port we just chose
-    #a = eib.New4VM(fourVM_addr);# from uProcess you know the 4VM device address is 28 
+
+            eib.InitConnection(eib_com) # COM port we just chose
+
+            if eib.New4VM(fourVM_addr) is None:
+                print('Invalid COM or Address')
+                continue
+            else:
+                break
+
+    a = eib.New4VM(fourVM_addr)
+
     COM_select.close()
 
     link = txfer.SerialTransfer('COM'+str(arduino_com))
@@ -154,6 +160,10 @@ def main():
             flow_setpoint = float(values[3])
             pid = True
         elif event in channels:
+            
+            a.CmdSelect (1, int(event)) # Move channel 1 into position
+            time.sleep(2.5)             # wait until valve is in position (2.5s max actuation time)
+
             for e in channels:
                 if e == event:
                     window.Element(e).Update(button_color=(('white', 'green')))
@@ -173,6 +183,10 @@ def main():
             flow_setpoint = float(values[3])  
 
         elif event in channels:
+
+            a.CmdSelect (1, int(event)) # Move channel 1 into position
+            time.sleep(2.5)
+
             for e in channels:
                 if e == event:
                     window.Element(e).Update(button_color=(('white', 'green')))
@@ -199,14 +213,13 @@ def main():
         ax.set_ylabel('Error')
         fig_agg.draw()
 
-        print(1/(time.time()-last))
+        #print(1/(time.time()-last)) #print frequency
+        print(flow)
         last = time.time()
         writer.writerow([time.time() - start, flow, pressure])
 
     window.close()
     log.close()
 
-
 if __name__ == '__main__':
-
     main()
