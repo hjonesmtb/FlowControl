@@ -8,8 +8,6 @@ Labsmith_uProcess_Python_support is a reference document for the valve controlle
 
 The valve controller is connected directly to the PC.
 
-Reference code:
-
 Reading from flow sensor: https://github.com/Sensirion/arduino-liquid-flow-snippets/blob/master/SF04/example_01_simple_measurement/example_01_simple_measurement.ino
 
 Writing to DAC: https://media.digikey.com/pdf/Data%20Sheets/Sparkfun%20PDFs/MCP4725_HookupGuide.pdf
